@@ -1,0 +1,135 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+  
+}
+<script src="~/js/jquery-2.2.3.min.js"></script>
+<div class="text-center">
+    <h1 class="display-4">WEB SHELL</h1>
+    <p>Developed <a href="https://artyom.tech">by artyom</a>.</p>
+</div>
+
+<div class="ButtonInput">
+    <input id="addInput" type="text" value="" placeholder="Введите команду и нажмите ENTER" />
+</div>
+
+
+
+
+<script type="text/javascript" language="javascript">
+    $(document).ready(function () {
+        $('#addButton').click(function () {
+            var value = $('#addInput').val();
+            Manager.GetAllValues(value);
+        });
+    });
+</script>
+
+<script type="text/javascript">
+   
+</script>
+
+
+<div class="panel panel-primary">
+    <div id="table-wrapper">
+        <div id="table-scroll">
+                <table class="table table-bordered" id="Table">
+                    <tr>
+                        <th></th>
+                    </tr>
+
+                </table>
+           
+
+        </div>
+        </div>
+    </div>
+
+        <script type="text/javascript">
+            $(document).ready(function () {
+                Manager.GetCommandHistory();
+            })
+
+            var Manager = {
+                GetAllValues: function (text) {
+                    var obj = "";
+                    var serviceUrl = "https://localhost:44325/api/values/GetAll/" + text;
+                    window.Manager.GetAPI(serviceUrl, onSuccess, onFailed);
+                    function onSuccess(jsonData) {
+
+                        obj = jsonData;
+                        $.each(jsonData, function (i, item) {
+                            var rows = "<tr>" +
+                                "<td id = 'Text'>" + item.cmdText + "</td>" +
+                                "</tr>";
+                            $('#Table').prepend(rows);
+                        });
+                        Manager.GetCommandHistory();
+                    }
+                    function onFailed(error) {
+                        window.alert(error.statusText);
+                    }
+                    return obj;
+
+
+                },
+                GetCommandHistory: function () {
+                    var obj = "";
+                    var i = -1;
+                    var count = 0;
+                    var serviceUrl = "https://localhost:44325/api/values/GetHistory/";
+                    window.Manager.GetAPI(serviceUrl, onSuccess, onFailed);
+                    function onSuccess(jsonData) {
+                        obj = jsonData;
+                        count = Object.keys(obj).length;
+                    }
+                    document.onkeydown = function (event) {
+                        switch (event.keyCode) {
+                            case 38:
+                                i = i + 1;
+                                if (i > count - 1) {
+                                    i = 0;
+                                    document.getElementById('addInput').value = obj[i].cmdInput;
+
+                                    break;
+                                }
+
+                                document.getElementById('addInput').value = obj[i].cmdInput;
+
+
+                                break;
+                            case 40:
+
+                                if (i <= 0) {
+                                    i = count - 1;
+                                    document.getElementById('addInput').value = obj[i].cmdInput;
+                                    break;
+                                }
+                                i = i - 1;
+                                document.getElementById('addInput').value = obj[i].cmdInput;
+                                break;
+                            case 13:
+                                    var value = $('#addInput').val();
+                                    Manager.GetAllValues(value);
+                                break;
+                        }
+                    };
+                    function onFailed(error) {
+                        window.alert(error.statusText);
+                    }
+                    return obj;
+
+
+                },
+                GetAPI: function (serviceUrl, successCallback, errorCallback) {
+                    $.ajax({
+                        type: "GET",
+                        url: serviceUrl,
+                        dataType: "json",
+                        success: successCallback,
+                        error: errorCallback
+
+                    });
+                },
+
+            }
+        </script>
